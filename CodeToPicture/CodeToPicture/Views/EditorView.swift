@@ -1,23 +1,51 @@
 import SwiftUI
 
-struct EditorView: NSViewRepresentable {
-    @Environment(AppSettings.self) private var settings
+struct EditorView: View {
+    @Environment(EditorViewModel.self) private var vm
 
-    func makeNSView(context: Context) -> NSTextView {
-        let textView = NSTextView()
-        textView.isEditable = true
-        textView.isRichText = false
-        textView.drawsBackground = false
-        textView.font = .monospacedSystemFont(ofSize: CGFloat(settings.fontSize), weight: .regular)
-        return textView
+    private let languages = [
+        "auto",
+        "swift", "python", "javascript", "typescript", "java",
+        "c", "cpp", "csharp", "go", "rust",
+        "ruby", "php", "kotlin", "scala", "sql",
+        "html", "css", "shell", "json", "yaml"
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            toolbar
+            CodeEditorView()
+        }
     }
 
-    func updateNSView(_ nsView: NSTextView, context: Context) {
-        nsView.font = .monospacedSystemFont(ofSize: CGFloat(settings.fontSize), weight: .regular)
+    private var toolbar: some View {
+        HStack {
+            Menu {
+                ForEach(languages, id: \.self) { lang in
+                    Button(lang == "auto" ? "Auto-detect" : lang) {
+                        vm.setLanguage(lang)
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left.forwardslash.chevron.right")
+                    Text(vm.language == "auto" ? "Auto" : vm.language)
+                        .font(.system(.body, design: .monospaced))
+                }
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
     }
 }
 
 #Preview {
     EditorView()
+        .environment(EditorViewModel())
         .environment(AppSettings())
+        .environment(ThemeManager())
 }

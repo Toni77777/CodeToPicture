@@ -1,13 +1,19 @@
 import SwiftUI
 
 struct MainWindow: View {
+    @State private var editorVM = EditorViewModel()
+
     var body: some View {
         NavigationSplitView {
             SettingsPanel()
                 .navigationSplitViewColumnWidth(280)
         } detail: {
-            PreviewView()
+            HSplitView {
+                EditorView()
+                PreviewView()
+            }
         }
+        .environment(editorVM)
     }
 }
 

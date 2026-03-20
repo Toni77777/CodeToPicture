@@ -3,7 +3,9 @@
     "allow": [
       "Bash(find /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture -type f ! -path */.* ! -path */.git/* ! -path */DerivedData/* ! -path *.xcstate/*)",
       "Bash(curl -sL \"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js\" -o /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/highlight.min.js)",
-      "Bash(xcodebuild -scheme CodeToPicture -destination 'platform=macOS' build)"
+      "Bash(xcodebuild -scheme CodeToPicture -destination 'platform=macOS' build)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(curl -sL \"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js\" -o /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/highlight.min.js)"
     ]
   }
 }
