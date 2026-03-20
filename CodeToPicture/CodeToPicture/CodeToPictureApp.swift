@@ -1,17 +1,15 @@
-//
-//  CodeToPictureApp.swift
-//  CodeToPicture
-//
-//  Created by Anton Paliakov on 20/03/2026.
-//
-
 import SwiftUI
 
 @main
-struct CodeToPictureApp: App {
+struct SnapCodeApp: App {
+    @State private var settings = AppSettings()
+    @State private var themeManager = ThemeManager()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainWindow()
         }
+        .environment(settings)
+        .environment(themeManager)
     }
 }

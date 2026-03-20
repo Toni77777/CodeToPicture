@@ -1,0 +1,15 @@
+{
+    "id": "monokai",
+    "name": "Monokai",
+    "backgroundColor": "#272822",
+    "foregroundColor": "#f8f8f2",
+    "accentColor": "#f92672",
+    "lineNumberColor": "#75715e",
+    "selectionColor": "#49483e",
+    "keywords": "#f92672",
+    "strings": "#e6db74",
+    "comments": "#75715e",
+    "functions": "#a6e22e",
+    "types": "#66d9ef",
+    "numbers": "#ae81ff"
+}
