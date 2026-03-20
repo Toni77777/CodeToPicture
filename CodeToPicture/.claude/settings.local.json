@@ -5,7 +5,11 @@
       "Bash(curl -sL \"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js\" -o /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/highlight.min.js)",
       "Bash(xcodebuild -scheme CodeToPicture -destination 'platform=macOS' build)",
       "Bash(echo \"EXIT:$?\")",
-      "Bash(curl -sL \"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js\" -o /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/highlight.min.js)"
+      "Bash(curl -sL \"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js\" -o /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/highlight.min.js)",
+      "Bash(curl -sL \"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/dracula/highlightjs/main/dracula.css\")",
+      "Bash(curl -sL \"https://unpkg.com/highlightjs-dracula@0.0.1/dist/dracula.css\")",
+      "Bash(head -c 200 /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/github-dark.min.css)"
     ]
   }
 }

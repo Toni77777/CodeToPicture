@@ -1,15 +1,8 @@
 {
     "id": "dracula",
     "name": "Dracula",
-    "backgroundColor": "#282a36",
-    "foregroundColor": "#f8f8f2",
-    "accentColor": "#bd93f9",
-    "lineNumberColor": "#6272a4",
-    "selectionColor": "#44475a",
-    "keywords": "#ff79c6",
-    "strings": "#f1fa8c",
-    "comments": "#6272a4",
-    "functions": "#50fa7b",
-    "types": "#8be9fd",
-    "numbers": "#bd93f9"
+    "isDark": true,
+    "backgroundColorHex": "#282a36",
+    "highlightJSName": "dracula",
+    "isPro": false
 }

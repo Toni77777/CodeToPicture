@@ -1,15 +1,8 @@
 {
     "id": "nord",
     "name": "Nord",
-    "backgroundColor": "#2e3440",
-    "foregroundColor": "#d8dee9",
-    "accentColor": "#88c0d0",
-    "lineNumberColor": "#4c566a",
-    "selectionColor": "#434c5e",
-    "keywords": "#81a1c1",
-    "strings": "#a3be8c",
-    "comments": "#616e88",
-    "functions": "#88c0d0",
-    "types": "#8fbcbb",
-    "numbers": "#b48ead"
+    "isDark": true,
+    "backgroundColorHex": "#2e3440",
+    "highlightJSName": "nord",
+    "isPro": false
 }

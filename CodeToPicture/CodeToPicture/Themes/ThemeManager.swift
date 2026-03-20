@@ -1,26 +1,34 @@
-import Foundation
+import SwiftUI
 
 @Observable
 @MainActor
 final class ThemeManager {
-    private(set) var builtInThemes: [Theme] = []
+    var themes: [Theme] = []
 
-    init() {
-        builtInThemes = Self.loadBuiltInThemes()
+    @ObservationIgnored
+    @AppStorage("selectedThemeID") private var selectedThemeID: String = "dracula"
+
+    var selectedTheme: Theme {
+        themes.first { $0.id == selectedThemeID } ?? themes[0]
     }
 
-    func theme(for id: String) -> Theme? {
-        builtInThemes.first { $0.id == id }
+    init() {
+        themes = Self.loadBuiltInThemes()
+    }
+
+    func applyTheme(_ theme: Theme, editorVM: EditorViewModel) {
+        selectedThemeID = theme.id
+        editorVM.applyTheme(theme.highlightJSName)
     }
 
     private static func loadBuiltInThemes() -> [Theme] {
         let fileNames = [
-            "catppuccin-mocha",
             "dracula",
+            "github-dark",
+            "github-light",
             "monokai",
             "nord",
-            "one-dark",
-            "solarized-dark"
+            "one-dark"
         ]
 
         return fileNames.compactMap { name in

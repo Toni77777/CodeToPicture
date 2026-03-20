@@ -1,15 +1,8 @@
 {
     "id": "one-dark",
     "name": "One Dark",
-    "backgroundColor": "#282c34",
-    "foregroundColor": "#abb2bf",
-    "accentColor": "#61afef",
-    "lineNumberColor": "#495162",
-    "selectionColor": "#3e4451",
-    "keywords": "#c678dd",
-    "strings": "#98c379",
-    "comments": "#5c6370",
-    "functions": "#61afef",
-    "types": "#e5c07b",
-    "numbers": "#d19a66"
+    "isDark": true,
+    "backgroundColorHex": "#282c34",
+    "highlightJSName": "atom-one-dark",
+    "isPro": false
 }

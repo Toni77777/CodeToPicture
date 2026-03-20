@@ -1,0 +1,8 @@
+{
+    "id": "github-dark",
+    "name": "GitHub Dark",
+    "isDark": true,
+    "backgroundColorHex": "#0d1117",
+    "highlightJSName": "github-dark",
+    "isPro": false
+}

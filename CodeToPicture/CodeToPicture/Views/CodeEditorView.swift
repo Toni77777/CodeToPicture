@@ -44,11 +44,10 @@ struct CodeEditorView: NSViewRepresentable {
             vm.setFontSize(settings.fontSize)
         }
 
-        if settings.selectedThemeID != coordinator.lastThemeID {
-            coordinator.lastThemeID = settings.selectedThemeID
-            if let theme = themeManager.theme(for: settings.selectedThemeID) {
-                vm.applyTheme(theme)
-            }
+        let currentTheme = themeManager.selectedTheme
+        if currentTheme.id != coordinator.lastThemeID {
+            coordinator.lastThemeID = currentTheme.id
+            vm.applyTheme(currentTheme.highlightJSName)
         }
     }
 

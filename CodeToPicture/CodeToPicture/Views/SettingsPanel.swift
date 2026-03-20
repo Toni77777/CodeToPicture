@@ -5,8 +5,16 @@ struct SettingsPanel: View {
     @Environment(ThemeManager.self) private var themeManager
 
     var body: some View {
-        Text("Settings")
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Theme")
+                .font(.headline)
+
+            ThemePicker()
+
+            Spacer()
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
@@ -14,4 +22,6 @@ struct SettingsPanel: View {
     SettingsPanel()
         .environment(AppSettings())
         .environment(ThemeManager())
+        .environment(EditorViewModel())
+        .frame(width: 280, height: 400)
 }

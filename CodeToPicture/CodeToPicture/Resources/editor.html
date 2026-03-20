@@ -3,18 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link id="hljs-theme" rel="stylesheet" href="dracula.min.css">
 <style>
     :root {
-        --bg: #282a36;
-        --fg: #f8f8f2;
-        --line-nr: #6272a4;
-        --selection: #44475a;
-        --kw: #ff79c6;
-        --str: #f1fa8c;
-        --cmt: #6272a4;
-        --fn: #50fa7b;
-        --typ: #8be9fd;
-        --num: #bd93f9;
         --font-size: 14px;
         --font-family: "SF Mono", ui-monospace, Menlo, monospace;
     }
@@ -46,15 +37,16 @@
         pointer-events: none;
         white-space: pre-wrap;
         word-wrap: break-word;
-        background: transparent;
     }
 
     pre code {
         font-family: inherit;
         font-size: inherit;
         line-height: inherit;
-        background: transparent;
     }
+
+    /* Let hljs CSS control pre/code background; make container transparent */
+    pre code.hljs { padding: 0; }
 
     textarea {
         position: absolute;
@@ -67,7 +59,7 @@
         resize: none;
         background: transparent;
         color: transparent;
-        caret-color: var(--fg);
+        caret-color: #f8f8f2;
         font-family: inherit;
         font-size: inherit;
         line-height: inherit;
@@ -79,25 +71,7 @@
         -moz-tab-size: 4;
     }
 
-    textarea::selection {
-        background: var(--selection);
-    }
-
     textarea::-webkit-scrollbar { display: none; }
-
-    /* hljs overrides — driven by CSS variables */
-    .hljs { background: transparent !important; color: var(--fg); }
-    .hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-meta { color: var(--kw); }
-    .hljs-string, .hljs-attr, .hljs-template-tag, .hljs-template-variable { color: var(--str); }
-    .hljs-comment, .hljs-quote, .hljs-doctag { color: var(--cmt); font-style: italic; }
-    .hljs-title, .hljs-title\.function_, .hljs-section { color: var(--fn); }
-    .hljs-type, .hljs-title\.class_, .hljs-title\.class_\.inherited__ { color: var(--typ); }
-    .hljs-number, .hljs-literal, .hljs-symbol, .hljs-bullet { color: var(--num); }
-    .hljs-variable, .hljs-params { color: var(--fg); }
-    .hljs-addition { color: var(--str); }
-    .hljs-deletion { color: var(--kw); }
-    .hljs-emphasis { font-style: italic; }
-    .hljs-strong { font-weight: bold; }
 </style>
 </head>
 <body>
@@ -114,6 +88,7 @@
     const input  = document.getElementById("input");
     const output = document.getElementById("output");
     const root   = document.documentElement;
+    const themeLink = document.getElementById("hljs-theme");
 
     let currentLanguage = "auto";
     let debounceTimer = null;
@@ -145,6 +120,11 @@
         });
     }
 
+    function syncCaretColor() {
+        const fg = getComputedStyle(output).color;
+        if (fg) input.style.caretColor = fg;
+    }
+
     input.addEventListener("input", function() {
         highlight();
         clearTimeout(debounceTimer);
@@ -157,7 +137,6 @@
         pre.scrollLeft = input.scrollLeft;
     });
 
-    // Handle Tab key for indentation
     input.addEventListener("keydown", function(e) {
         if (e.key === "Tab") {
             e.preventDefault();
@@ -173,18 +152,12 @@
 
     // --- Swift → JS API ---
 
-    window.applyTheme = function(theme) {
-        root.style.setProperty("--bg",  theme.backgroundColor);
-        root.style.setProperty("--fg",  theme.foregroundColor);
-        root.style.setProperty("--selection", theme.selectionColor);
-        root.style.setProperty("--kw",  theme.keywords);
-        root.style.setProperty("--str", theme.strings);
-        root.style.setProperty("--cmt", theme.comments);
-        root.style.setProperty("--fn",  theme.functions);
-        root.style.setProperty("--typ", theme.types);
-        root.style.setProperty("--num", theme.numbers);
-        document.body.style.backgroundColor = theme.backgroundColor;
-        highlight();
+    window.applyTheme = function(name) {
+        themeLink.href = name + ".min.css";
+        themeLink.onload = function() {
+            syncCaretColor();
+            highlight();
+        };
     };
 
     window.setFontSize = function(px) {

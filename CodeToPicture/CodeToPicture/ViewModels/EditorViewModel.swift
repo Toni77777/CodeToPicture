@@ -14,21 +14,8 @@ final class EditorViewModel {
         self.webView = webView
     }
 
-    func applyTheme(_ theme: Theme) {
-        let js = """
-        applyTheme({
-            backgroundColor: "\(theme.backgroundColor)",
-            foregroundColor: "\(theme.foregroundColor)",
-            selectionColor: "\(theme.selectionColor)",
-            keywords: "\(theme.keywords)",
-            strings: "\(theme.strings)",
-            comments: "\(theme.comments)",
-            functions: "\(theme.functions)",
-            types: "\(theme.types)",
-            numbers: "\(theme.numbers)"
-        });
-        """
-        evaluateJS(js)
+    func applyTheme(_ hlName: String) {
+        evaluateJS("applyTheme('\(hlName)');")
     }
 
     func setLanguage(_ lang: String) {
