@@ -35,4 +35,7 @@ final class AppSettings {
 
     @ObservationIgnored
     @AppStorage("windowFrameStyle") var windowFrameStyle: String = "macos"
+
+    @ObservationIgnored
+    @AppStorage("hideDockIcon") var hideDockIcon: Bool = false
 }

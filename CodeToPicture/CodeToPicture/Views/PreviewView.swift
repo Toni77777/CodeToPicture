@@ -4,6 +4,7 @@ struct PreviewView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(EditorViewModel.self) private var editorVM
     @Environment(ThemeManager.self) private var themeManager
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var vm = PreviewViewModel()
     @State private var exportVM = ExportViewModel()
 
@@ -79,6 +80,9 @@ struct PreviewView: View {
         .onChange(of: exportVM.statusMessage) { _, msg in
             if !msg.isEmpty { vm.showStatus(msg) }
         }
+        .sheet(isPresented: $exportVM.showProSheet) {
+            ProUpgradeSheet()
+        }
     }
 
     // MARK: - Status bar
@@ -96,7 +100,7 @@ struct PreviewView: View {
                     await exportVM.copyToClipboard(
                         cardView: exportCard,
                         scale: settings.exportScale,
-                        isPro: false
+                        isPro: purchaseManager.isPro
                     )
                 }
             }
@@ -107,17 +111,69 @@ struct PreviewView: View {
                     await exportVM.exportPNG(
                         cardView: exportCard,
                         scale: settings.exportScale,
-                        isPro: false
+                        isPro: purchaseManager.isPro
                     )
                 }
             }
             .buttonStyle(.borderedProminent)
             .disabled(exportVM.isExporting)
+
+            exportMenu
         }
         .padding(.horizontal)
         .padding(.bottom, 8)
         .padding(.top, 4)
     }
+
+    // MARK: - Export menu
+
+    private var exportMenu: some View {
+        Menu {
+            Button("PNG") {
+                Task {
+                    await exportVM.exportPNG(
+                        cardView: exportCard,
+                        scale: settings.exportScale,
+                        isPro: purchaseManager.isPro
+                    )
+                }
+            }
+
+            Divider()
+
+            Button("SVG \u{2B50}") {
+                Task {
+                    await exportVM.exportSVGFile(
+                        code: editorVM.code,
+                        theme: themeManager.selectedTheme,
+                        settings: settings,
+                        isPro: purchaseManager.isPro
+                    )
+                }
+            }
+
+            Button("PDF \u{2B50}") {
+                Task {
+                    await exportVM.exportPDFFile(
+                        cardView: exportCard,
+                        size: CGSize(
+                            width: max(vm.displayWidth, 300),
+                            height: max(vm.displayHeight, 200)
+                        ),
+                        isPro: purchaseManager.isPro
+                    )
+                }
+            }
+        } label: {
+            Image(systemName: "chevron.down")
+                .font(.caption)
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .disabled(exportVM.isExporting)
+    }
+
+    // MARK: - Export card
 
     private var exportCard: some View {
         CodeCardView()
@@ -136,5 +192,6 @@ struct PreviewView: View {
         .environment(AppSettings())
         .environment(EditorViewModel())
         .environment(ThemeManager())
+        .environment(PurchaseManager())
         .frame(width: 700, height: 500)
 }

@@ -6,9 +6,12 @@ import UniformTypeIdentifiers
 final class ExportViewModel {
     var isExporting: Bool = false
     var statusMessage: String = ""
+    var showProSheet: Bool = false
 
     private let manager = ExportManager()
     private var dismissTask: Task<Void, Never>?
+
+    // MARK: - PNG
 
     func exportPNG(cardView: sending some View, scale: CGFloat, isPro: Bool) async {
         isExporting = true
@@ -44,6 +47,75 @@ final class ExportViewModel {
             showStatus("Copied!")
         }
     }
+
+    // MARK: - PDF
+
+    func exportPDFFile(cardView: sending some View, size: CGSize, isPro: Bool) async {
+        guard isPro else {
+            showProSheet = true
+            return
+        }
+
+        isExporting = true
+        defer { isExporting = false }
+
+        let data = await manager.exportPDF(view: cardView, size: size)
+
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.pdf]
+        panel.nameFieldStringValue = "snapshot.pdf"
+
+        guard let window = NSApp.keyWindow else { return }
+        let response = await panel.beginSheetModal(for: window)
+
+        if response == .OK, let url = panel.url {
+            try? data.write(to: url)
+            showStatus("Exported PDF!")
+        }
+    }
+
+    // MARK: - SVG
+
+    func exportSVGFile(
+        code: String,
+        theme: Theme,
+        settings: AppSettings,
+        isPro: Bool
+    ) async {
+        guard isPro else {
+            showProSheet = true
+            return
+        }
+
+        isExporting = true
+        defer { isExporting = false }
+
+        let svg = await manager.exportSVG(
+            code: code,
+            themeHighlightJSName: theme.highlightJSName,
+            backgroundColorHex: settings.backgroundColorHex,
+            fontSize: settings.fontSize,
+            fontFamily: settings.fontFamily,
+            padding: settings.padding,
+            cornerRadius: settings.cornerRadius,
+            showWindowFrame: settings.showWindowFrame
+        )
+
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.svg]
+        panel.nameFieldStringValue = "snapshot.svg"
+
+        guard let window = NSApp.keyWindow else { return }
+        let response = await panel.beginSheetModal(for: window)
+
+        if response == .OK, let url = panel.url,
+           let data = svg.data(using: .utf8) {
+            try? data.write(to: url)
+            showStatus("Exported SVG!")
+        }
+    }
+
+    // MARK: - Status
 
     private func showStatus(_ msg: String) {
         statusMessage = msg

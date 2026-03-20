@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MainWindow: View {
-    @State private var editorVM = EditorViewModel()
+    @Environment(EditorViewModel.self) private var editorVM
 
     var body: some View {
         NavigationSplitView {
@@ -13,7 +13,6 @@ struct MainWindow: View {
                 PreviewView()
             }
         }
-        .environment(editorVM)
     }
 }
 
@@ -21,4 +20,6 @@ struct MainWindow: View {
     MainWindow()
         .environment(AppSettings())
         .environment(ThemeManager())
+        .environment(PurchaseManager())
+        .environment(EditorViewModel())
 }

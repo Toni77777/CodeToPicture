@@ -40,7 +40,7 @@ struct ThemePicker: View {
     }
 }
 
-// MARK: - Color hex initialiser
+// MARK: - Color hex helpers
 
 extension Color {
     init(hex: String) {
@@ -54,6 +54,16 @@ extension Color {
         let b = Double( rgb        & 0xFF) / 255
 
         self.init(red: r, green: g, blue: b)
+    }
+
+    func toHex() -> String {
+        let nsColor = NSColor(self).usingColorSpace(.sRGB)
+            ?? NSColor(self).usingColorSpace(.deviceRGB)
+            ?? NSColor(self)
+        let r = Int((nsColor.redComponent * 255).rounded())
+        let g = Int((nsColor.greenComponent * 255).rounded())
+        let b = Int((nsColor.blueComponent * 255).rounded())
+        return String(format: "#%02x%02x%02x", r, g, b)
     }
 }
 
