@@ -9,7 +9,8 @@
       "Bash(curl -sL \"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/\")",
       "Bash(curl -sL \"https://raw.githubusercontent.com/dracula/highlightjs/main/dracula.css\")",
       "Bash(curl -sL \"https://unpkg.com/highlightjs-dracula@0.0.1/dist/dracula.css\")",
-      "Bash(head -c 200 /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/github-dark.min.css)"
+      "Bash(head -c 200 /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/github-dark.min.css)",
+      "Bash(xcodebuild -project /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture.xcodeproj -scheme CodeToPicture -destination 'platform=macOS' build)"
     ]
   }
 }
