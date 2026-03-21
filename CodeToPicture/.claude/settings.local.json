@@ -17,7 +17,9 @@
       "Bash(BUNDLE=\"/Users/antonpaliakov/Library/Developer/Xcode/DerivedData/CodeToPicture-dausgwoxrnnablcrlrjbvjqyjitc/Build/Products/Debug/CodeToPicture.app/Contents/Resources\" echo \"=== Pro JSON files ===\")",
       "Read(//Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/$BUNDLE/**)",
       "Read(//Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/**)",
-      "Bash(ls \"/Users/antonpaliakov/Library/Developer/Xcode/DerivedData/CodeToPicture-dausgwoxrnnablcrlrjbvjqyjitc/Build/Products/Debug/CodeToPicture.app/Contents/Resources/\"*.json)"
+      "Bash(ls \"/Users/antonpaliakov/Library/Developer/Xcode/DerivedData/CodeToPicture-dausgwoxrnnablcrlrjbvjqyjitc/Build/Products/Debug/CodeToPicture.app/Contents/Resources/\"*.json)",
+      "Bash(ls /Users/antonpaliakov/dev/CodeToPicture/CodeToPicture/CodeToPicture/Resources/*.css)",
+      "Bash(xcodebuild -scheme CodeToPicture -destination 'platform=macOS' clean build)"
     ]
   }
 }

@@ -17,15 +17,26 @@ struct CodeCardView: View {
                         .padding([.top, .leading], 12)
                 }
 
-                Text(editorVM.code.isEmpty ? " " : editorVM.code)
-                    .font(.system(size: settings.fontSize, design: .monospaced))
-                    .foregroundStyle(Color(hex: themeManager.selectedTheme.isDark ? "#f8f8f2" : "#24292e"))
+                Text(highlightedCode)
                     .lineSpacing(settings.fontSize * 0.6)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(settings.padding)
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: settings.cornerRadius))
+    }
+
+    private var highlightedCode: AttributedString {
+        let code = editorVM.code.isEmpty ? " " : editorVM.code
+        let font = NSFont(name: settings.fontFamily, size: settings.fontSize)
+            ?? NSFont.monospacedSystemFont(ofSize: settings.fontSize, weight: .regular)
+        return SyntaxHighlighter.shared.highlightToSwiftUI(
+            code: code,
+            language: editorVM.language,
+            theme: themeManager.selectedTheme,
+            font: font,
+            lineSpacing: settings.fontSize * 0.6
+        )
     }
 }
 
