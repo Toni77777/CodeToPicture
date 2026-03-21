@@ -17,12 +17,12 @@ struct CodeCardView: View {
                         .padding([.top, .leading], 12)
                 }
 
-                CodePreviewWebView(
-                    code: editorVM.code,
-                    highlightJSName: themeManager.selectedTheme.highlightJSName,
-                    fontSize: settings.fontSize
-                )
-                .padding(settings.padding)
+                Text(editorVM.code.isEmpty ? " " : editorVM.code)
+                    .font(.system(size: settings.fontSize, design: .monospaced))
+                    .foregroundStyle(Color(hex: themeManager.selectedTheme.isDark ? "#f8f8f2" : "#24292e"))
+                    .lineSpacing(settings.fontSize * 0.6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(settings.padding)
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: settings.cornerRadius))

@@ -95,22 +95,21 @@
 
     function highlight() {
         const code = input.value;
-        output.textContent = code;
 
         if (code.length === 0) {
             output.innerHTML = "";
+            output.className = "hljs";
             return;
         }
 
-        output.removeAttribute("data-highlighted");
-
+        var result;
         if (currentLanguage === "auto") {
-            output.className = "hljs";
-            hljs.highlightElement(output);
+            result = hljs.highlightAuto(code);
         } else {
-            output.className = "hljs language-" + currentLanguage;
-            hljs.highlightElement(output);
+            result = hljs.highlight(code, { language: currentLanguage });
         }
+        output.innerHTML = result.value;
+        output.className = "hljs" + (result.language ? " language-" + result.language : "");
     }
 
     function sendCode() {
