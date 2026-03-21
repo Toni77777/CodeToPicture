@@ -15,6 +15,7 @@ struct EditorView: View {
         VStack(spacing: 0) {
             toolbar
             CodeEditorView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 

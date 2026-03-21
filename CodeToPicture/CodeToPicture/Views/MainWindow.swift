@@ -10,6 +10,7 @@ struct MainWindow: View {
         } detail: {
             HSplitView {
                 EditorView()
+                    .frame(minWidth: 300, maxWidth: .infinity, maxHeight: .infinity)
                 PreviewView()
             }
         }

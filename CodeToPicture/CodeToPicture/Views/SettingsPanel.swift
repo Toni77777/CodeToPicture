@@ -73,9 +73,6 @@ struct SettingsPanel: View {
                     Text(lang).tag(lang)
                 }
             }
-            .onChange(of: self.editorVM.language) { _, newLang in
-                self.editorVM.setLanguage(newLang)
-            }
 
             Picker("Font", selection: settings.fontFamily) {
                 ForEach(monospaceFonts, id: \.self) { family in
@@ -85,9 +82,6 @@ struct SettingsPanel: View {
 
             LabeledContent("Size  \(Int(self.settings.fontSize)) pt") {
                 Slider(value: settings.fontSize, in: 10...24, step: 1)
-            }
-            .onChange(of: self.settings.fontSize) { _, newSize in
-                self.editorVM.setFontSize(newSize)
             }
         }
     }

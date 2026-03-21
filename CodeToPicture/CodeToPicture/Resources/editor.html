@@ -137,6 +137,13 @@
         pre.scrollLeft = input.scrollLeft;
     });
 
+    input.addEventListener("paste", function() {
+        setTimeout(function() {
+            highlight();
+            sendCode();
+        }, 0);
+    });
+
     input.addEventListener("keydown", function(e) {
         if (e.key === "Tab") {
             e.preventDefault();
@@ -178,10 +185,24 @@
         return input.value;
     };
 
+    window.pasteText = function(text) {
+        var start = input.selectionStart;
+        var end = input.selectionEnd;
+        input.value = input.value.substring(0, start) + text + input.value.substring(end);
+        input.selectionStart = input.selectionEnd = start + text.length;
+        highlight();
+        sendCode();
+    };
+
+    // Set default placeholder code
+    var defaultCode = "// Paste or type your code here\nfunc greet(_ name: String) -> String {\n    return \"Hello, \\(name)!\"\n}\n\nprint(greet(\"World\"))";
+    input.value = defaultCode;
+    highlight();
+
     // Signal readiness
     window.webkit.messageHandlers.bridge.postMessage({
         type: "ready",
-        payload: ""
+        payload: defaultCode
     });
 })();
 </script>

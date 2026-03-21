@@ -18,7 +18,6 @@ final class ThemeManager {
 
     func applyTheme(_ theme: Theme, editorVM: EditorViewModel) {
         selectedThemeID = theme.id
-        editorVM.applyTheme(theme.highlightJSName)
     }
 
     private static func loadBuiltInThemes() -> [Theme] {
