@@ -7,6 +7,7 @@ struct PreviewView: View {
     @Environment(PurchaseManager.self) private var purchaseManager
     @State private var vm = PreviewViewModel()
     @State private var exportVM = ExportViewModel()
+    @State private var showBatchExport = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -82,6 +83,9 @@ struct PreviewView: View {
         }
         .sheet(isPresented: $exportVM.showProSheet) {
             ProUpgradeSheet()
+        }
+        .sheet(isPresented: $showBatchExport) {
+            BatchExportView()
         }
     }
 
@@ -163,6 +167,12 @@ struct PreviewView: View {
                         isPro: purchaseManager.isPro
                     )
                 }
+            }
+
+            Divider()
+
+            Button("Batch Export \u{2B50}") {
+                showBatchExport = true
             }
         } label: {
             Image(systemName: "chevron.down")

@@ -39,6 +39,15 @@ final class AppSettings {
     var hideDockIcon: Bool = false {
         didSet { UserDefaults.standard.set(hideDockIcon, forKey: "hideDockIcon") }
     }
+    var aspectRatio: Double? = nil {
+        didSet {
+            if let aspectRatio {
+                UserDefaults.standard.set(aspectRatio, forKey: "aspectRatio")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "aspectRatio")
+            }
+        }
+    }
 
     init() {
         let d = UserDefaults.standard
@@ -54,5 +63,6 @@ final class AppSettings {
         if d.object(forKey: "menuBarEnabled") != nil { menuBarModeEnabled = d.bool(forKey: "menuBarEnabled") }
         if let v = d.string(forKey: "windowFrameStyle") { windowFrameStyle = v }
         if d.object(forKey: "hideDockIcon") != nil { hideDockIcon = d.bool(forKey: "hideDockIcon") }
+        if d.object(forKey: "aspectRatio") != nil { aspectRatio = d.double(forKey: "aspectRatio") }
     }
 }

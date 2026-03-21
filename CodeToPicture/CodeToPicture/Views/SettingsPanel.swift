@@ -6,6 +6,7 @@ struct SettingsPanel: View {
     @Environment(PurchaseManager.self) private var purchaseManager
     @Environment(EditorViewModel.self) private var editorVM
     @Environment(MenuBarManager.self) private var menuBarManager
+    @State private var presetsVM = PresetsViewModel()
     @State private var showProSheet = false
 
     private let languages = [
@@ -24,6 +25,7 @@ struct SettingsPanel: View {
 
         Form {
             themeSection
+            presetsSection
             codeSection(settings: $settings, editorVM: $editorVM)
             canvasSection(settings: $settings)
             windowFrameSection(settings: $settings)
@@ -57,6 +59,73 @@ struct SettingsPanel: View {
     private var themeSection: some View {
         Section("Theme") {
             ThemePicker(onProRequired: { showProSheet = true })
+        }
+    }
+
+    // MARK: - Presets
+
+    private var presetsSection: some View {
+        Section("Presets") {
+            ProLockedRow(
+                label: "Social presets",
+                isPro: purchaseManager.isPro,
+                onTap: { showProSheet = true }
+            ) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(presetsVM.builtInPresets + presetsVM.userPresets) { preset in
+                            VStack(spacing: 4) {
+                                Image(systemName: preset.symbolName)
+                                    .font(.title3)
+                                    .frame(width: 44, height: 32)
+                                Text(preset.name)
+                                    .font(.system(size: 9))
+                                    .lineLimit(1)
+                            }
+                            .frame(width: 60, height: 52)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(.quaternary)
+                            )
+                            .onTapGesture {
+                                presetsVM.apply(preset, to: settings)
+                            }
+                            .contextMenu {
+                                if !preset.isBuiltIn {
+                                    Button("Delete", role: .destructive) {
+                                        presetsVM.deleteUserPreset(preset)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+
+            Button("Save current as preset") {
+                presetsVM.showSaveSheet = true
+            }
+            .disabled(presetsVM.userPresets.count >= 10)
+        }
+        .sheet(isPresented: $presetsVM.showSaveSheet) {
+            Form {
+                TextField("Preset name", text: $presetsVM.newPresetName)
+                HStack {
+                    Button("Cancel") {
+                        presetsVM.showSaveSheet = false
+                        presetsVM.newPresetName = ""
+                    }
+                    Spacer()
+                    Button("Save") {
+                        presetsVM.saveCurrentAsPreset(settings: settings)
+                        presetsVM.showSaveSheet = false
+                    }
+                    .disabled(presetsVM.newPresetName.isEmpty)
+                }
+            }
+            .padding()
+            .frame(width: 280)
         }
     }
 
