@@ -5,14 +5,18 @@ import SwiftUI
 final class ThemeManager {
     var themes: [Theme] = []
 
-    @ObservationIgnored
-    @AppStorage("selectedThemeID") private var selectedThemeID: String = "dracula"
+    var selectedThemeID: String = "dracula" {
+        didSet { UserDefaults.standard.set(selectedThemeID, forKey: "selectedThemeID") }
+    }
 
     var selectedTheme: Theme {
         themes.first { $0.id == selectedThemeID } ?? themes[0]
     }
 
     init() {
+        if let saved = UserDefaults.standard.string(forKey: "selectedThemeID") {
+            selectedThemeID = saved
+        }
         themes = Self.loadBuiltInThemes()
     }
 
