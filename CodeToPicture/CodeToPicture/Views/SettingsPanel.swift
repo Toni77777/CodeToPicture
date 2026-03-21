@@ -7,6 +7,7 @@ struct SettingsPanel: View {
     @Environment(EditorViewModel.self) private var editorVM
     @Environment(MenuBarManager.self) private var menuBarManager
     @State private var presetsVM = PresetsViewModel()
+    @State private var bgVM = CanvasBackgroundViewModel()
     @State private var showProSheet = false
 
     private let languages = [
@@ -28,6 +29,7 @@ struct SettingsPanel: View {
             presetsSection
             codeSection(settings: $settings, editorVM: $editorVM)
             canvasSection(settings: $settings)
+            CanvasBackgroundEditorPanel(bgVM: bgVM)
             windowFrameSection(settings: $settings)
             exportSection(settings: $settings)
             menuBarSection(settings: $settings)
@@ -52,6 +54,7 @@ struct SettingsPanel: View {
         .sheet(isPresented: $showProSheet) {
             ProUpgradeSheet()
         }
+        .onAppear { bgVM.loadFrom(settings) }
     }
 
     // MARK: - Theme
@@ -186,6 +189,14 @@ struct SettingsPanel: View {
 
             LabeledContent("Corner radius  \(Int(self.settings.cornerRadius)) pt") {
                 Slider(value: settings.cornerRadius, in: 0...24, step: 2)
+            }
+
+            LabeledContent("Canvas padding  \(Int(self.settings.canvasPadding)) pt") {
+                Slider(value: settings.canvasPadding, in: 0...120, step: 4)
+            }
+
+            LabeledContent("Canvas radius  \(Int(self.settings.canvasCornerRadius)) pt") {
+                Slider(value: settings.canvasCornerRadius, in: 0...32, step: 2)
             }
         }
     }

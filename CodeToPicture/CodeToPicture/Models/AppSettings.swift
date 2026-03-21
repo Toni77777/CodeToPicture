@@ -48,6 +48,25 @@ final class AppSettings {
             }
         }
     }
+    var canvasBackground: CanvasBackground = .solid(hex: "#18181b")
+    var canvasPadding: Double = 40 {
+        didSet { UserDefaults.standard.set(canvasPadding, forKey: "canvasPadding") }
+    }
+    var canvasCornerRadius: Double = 0 {
+        didSet { UserDefaults.standard.set(canvasCornerRadius, forKey: "canvasCornerRadius") }
+    }
+
+    func saveCanvasBackground() {
+        guard let data = try? JSONEncoder().encode(canvasBackground) else { return }
+        UserDefaults.standard.set(data, forKey: "canvasBackground")
+    }
+
+    private func loadCanvasBackground() {
+        guard let data = UserDefaults.standard.data(forKey: "canvasBackground"),
+              let decoded = try? JSONDecoder().decode(CanvasBackground.self, from: data)
+        else { return }
+        canvasBackground = decoded
+    }
 
     init() {
         let d = UserDefaults.standard
@@ -64,5 +83,8 @@ final class AppSettings {
         if let v = d.string(forKey: "windowFrameStyle") { windowFrameStyle = v }
         if d.object(forKey: "hideDockIcon") != nil { hideDockIcon = d.bool(forKey: "hideDockIcon") }
         if d.object(forKey: "aspectRatio") != nil { aspectRatio = d.double(forKey: "aspectRatio") }
+        if d.object(forKey: "canvasPadding") != nil { canvasPadding = d.double(forKey: "canvasPadding") }
+        if d.object(forKey: "canvasCornerRadius") != nil { canvasCornerRadius = d.double(forKey: "canvasCornerRadius") }
+        loadCanvasBackground()
     }
 }

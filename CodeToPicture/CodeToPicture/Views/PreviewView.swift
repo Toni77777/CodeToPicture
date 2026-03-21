@@ -13,11 +13,7 @@ struct PreviewView: View {
         VStack(spacing: 0) {
             GeometryReader { geo in
                 ScrollView([.horizontal, .vertical]) {
-                    CodeCardView()
-                        .frame(
-                            width: max(vm.displayWidth, 300),
-                            height: max(vm.displayHeight, 200)
-                        )
+                    canvasWithCard
                         .padding(40)
                 }
                 .onAppear {
@@ -93,7 +89,7 @@ struct PreviewView: View {
 
     private var statusBar: some View {
         HStack {
-            Text("\(vm.imageWidth) \u{00D7} \(vm.imageHeight) px @ \(Int(settings.exportScale))\u{00D7}")
+            Text("\(exportImageWidth) \u{00D7} \(exportImageHeight) px @ \(Int(settings.exportScale))\u{00D7}")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -158,11 +154,13 @@ struct PreviewView: View {
 
             Button("PDF \u{2B50}") {
                 Task {
+                    let cardW = max(vm.displayWidth, 300)
+                    let cardH = max(vm.displayHeight, 200)
                     await exportVM.exportPDFFile(
                         cardView: exportCard,
                         size: CGSize(
-                            width: max(vm.displayWidth, 300),
-                            height: max(vm.displayHeight, 200)
+                            width: cardW + settings.canvasPadding * 2,
+                            height: cardH + settings.canvasPadding * 2
                         ),
                         isPro: purchaseManager.isPro
                     )
@@ -183,17 +181,55 @@ struct PreviewView: View {
         .disabled(exportVM.isExporting)
     }
 
+    // MARK: - Export dimensions (includes canvas padding)
+
+    private var exportImageWidth: Int {
+        Int((max(vm.displayWidth, 300) + settings.canvasPadding * 2) * settings.exportScale)
+    }
+
+    private var exportImageHeight: Int {
+        Int((max(vm.displayHeight, 200) + settings.canvasPadding * 2) * settings.exportScale)
+    }
+
+    // MARK: - Canvas with card
+
+    private var canvasWithCard: some View {
+        let cardW = max(vm.displayWidth, 300)
+        let cardH = max(vm.displayHeight, 200)
+        let totalW = cardW + settings.canvasPadding * 2
+        let totalH = cardH + settings.canvasPadding * 2
+
+        return ZStack {
+            CanvasBackgroundView(background: settings.canvasBackground)
+                .frame(width: totalW, height: totalH)
+                .clipShape(RoundedRectangle(cornerRadius: settings.canvasCornerRadius))
+
+            CodeCardView()
+                .frame(width: cardW, height: cardH)
+        }
+        .frame(width: totalW, height: totalH)
+    }
+
     // MARK: - Export card
 
     private var exportCard: some View {
-        CodeCardView()
-            .frame(
-                width: max(vm.displayWidth, 300),
-                height: max(vm.displayHeight, 200)
-            )
-            .environment(settings)
-            .environment(editorVM)
-            .environment(themeManager)
+        let cardW = max(vm.displayWidth, 300)
+        let cardH = max(vm.displayHeight, 200)
+        let totalW = cardW + settings.canvasPadding * 2
+        let totalH = cardH + settings.canvasPadding * 2
+
+        return ZStack {
+            CanvasBackgroundView(background: settings.canvasBackground)
+                .frame(width: totalW, height: totalH)
+                .clipShape(RoundedRectangle(cornerRadius: settings.canvasCornerRadius))
+
+            CodeCardView()
+                .frame(width: cardW, height: cardH)
+        }
+        .frame(width: totalW, height: totalH)
+        .environment(settings)
+        .environment(editorVM)
+        .environment(themeManager)
     }
 }
 

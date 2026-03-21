@@ -49,12 +49,17 @@ final class BatchExportViewModel {
                 tempEditor.code = code
                 tempEditor.language = items[i].detectedLanguage
 
-                let cardView = CodeCardView()
-                    .environment(settings)
-                    .environment(tempEditor)
-                    .environment(themeManager)
+                let cardView = ZStack {
+                    CanvasBackgroundView(background: settings.canvasBackground)
+                    CodeCardView()
+                }
+                .environment(settings)
+                .environment(tempEditor)
+                .environment(themeManager)
 
-                let image = await manager.renderImage(view: cardView, scale: settings.exportScale)
+                let renderer = ImageRenderer(content: cardView)
+                renderer.scale = settings.exportScale
+                let image = renderer.nsImage ?? NSImage()
                 let stamped = await manager.addWatermark(to: image, isPro: isPro)
                 let dest = folder.appendingPathComponent(items[i].filename + ".png")
                 if let data = await manager.pngData(from: stamped) {
