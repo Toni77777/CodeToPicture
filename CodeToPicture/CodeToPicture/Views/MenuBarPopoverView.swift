@@ -6,6 +6,7 @@ struct MenuBarPopoverView: View {
     @Environment(ThemeManager.self) private var themeManager
     @Environment(PurchaseManager.self) private var purchaseManager
     @State private var exportVM = ExportViewModel()
+    @State private var showProSheet = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -14,7 +15,7 @@ struct MenuBarPopoverView: View {
 
             Divider()
 
-            ThemePicker()
+            ThemePicker(onProRequired: { showProSheet = true })
                 .padding(.horizontal, 8)
                 .padding(.vertical, 6)
 
@@ -35,6 +36,9 @@ struct MenuBarPopoverView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: exportVM.statusMessage)
+        .sheet(isPresented: $showProSheet) {
+            ProUpgradeSheet()
+        }
     }
 
     // MARK: - Bottom bar

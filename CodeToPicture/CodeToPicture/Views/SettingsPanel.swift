@@ -56,7 +56,7 @@ struct SettingsPanel: View {
 
     private var themeSection: some View {
         Section("Theme") {
-            ThemePicker()
+            ThemePicker(onProRequired: { showProSheet = true })
         }
     }
 

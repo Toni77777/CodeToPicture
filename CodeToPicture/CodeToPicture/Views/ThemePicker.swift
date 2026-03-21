@@ -2,40 +2,62 @@ import SwiftUI
 
 struct ThemePicker: View {
     @Environment(ThemeManager.self) private var themeManager
-    @Environment(EditorViewModel.self) private var editorVM
+    @Environment(PurchaseManager.self) private var purchaseManager
+    var onProRequired: () -> Void = {}
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
-                ForEach(themeManager.themes) { theme in
-                    VStack(spacing: 4) {
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color(hex: theme.backgroundColorHex))
-                            .frame(width: 48, height: 36)
-                            .overlay {
-                                if theme.isPro {
-                                    Text("\u{2605}")
-                                        .font(.system(size: 9))
-                                        .foregroundStyle(.yellow)
-                                }
-                            }
-                            .overlay {
-                                if themeManager.selectedTheme.id == theme.id {
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(Color.accentColor, lineWidth: 2)
-                                }
-                            }
-
-                        Text(theme.name)
-                            .font(.system(size: 10))
-                            .lineLimit(1)
-                    }
-                    .onTapGesture {
-                        themeManager.applyTheme(theme, editorVM: editorVM)
-                    }
-                }
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 12) {
+                themeSection(title: "Free", themes: themeManager.freeThemes)
+                themeSection(title: "Pro \u{2B50}", themes: themeManager.proThemes)
             }
             .padding(.horizontal, 4)
+        }
+    }
+
+    private func themeSection(title: String, themes: [Theme]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.leading, 2)
+
+            LazyVGrid(columns: [
+                GridItem(.adaptive(minimum: 52), spacing: 8)
+            ], spacing: 8) {
+                ForEach(themes) { theme in
+                    themeCard(theme)
+                }
+            }
+        }
+    }
+
+    private func themeCard(_ theme: Theme) -> some View {
+        VStack(spacing: 4) {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(hex: theme.backgroundColorHex))
+                .frame(width: 48, height: 36)
+                .overlay(alignment: .topTrailing) {
+                    if theme.isPro {
+                        Text("\u{2605}")
+                            .font(.system(size: 9))
+                            .foregroundStyle(.orange)
+                            .padding(2)
+                    }
+                }
+                .overlay {
+                    if themeManager.selectedTheme.id == theme.id {
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.accentColor, lineWidth: 2)
+                    }
+                }
+
+            Text(theme.name)
+                .font(.system(size: 9))
+                .lineLimit(1)
+        }
+        .onTapGesture {
+            themeManager.applyTheme(theme, isPro: purchaseManager.isPro, onProRequired: onProRequired)
         }
     }
 }
@@ -70,6 +92,6 @@ extension Color {
 #Preview {
     ThemePicker()
         .environment(ThemeManager())
-        .environment(EditorViewModel())
+        .environment(PurchaseManager())
         .frame(width: 280)
 }
