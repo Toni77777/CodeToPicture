@@ -4,7 +4,7 @@ import StoreKit
 @Observable
 @MainActor
 final class PurchaseManager {
-    var isPro: Bool = UserDefaults.standard.bool(forKey: "isPro")
+    var isPro: Bool = true // TODO: revert to UserDefaults.standard.bool(forKey: "isPro") before release
     var product: Product?
     var isLoading: Bool = false
     var errorMessage: String?

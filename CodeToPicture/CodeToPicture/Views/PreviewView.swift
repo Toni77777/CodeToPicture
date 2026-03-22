@@ -62,6 +62,20 @@ struct PreviewView: View {
                 settings: settings
             )
         }
+        .onChange(of: settings.canvasPadding) {
+            vm.computeDimensions(
+                containerWidth: vm.displayWidth,
+                code: editorVM.code,
+                settings: settings
+            )
+        }
+        .onChange(of: settings.cornerRadius) {
+            vm.computeDimensions(
+                containerWidth: vm.displayWidth,
+                code: editorVM.code,
+                settings: settings
+            )
+        }
         .overlay(alignment: .bottom) {
             if !vm.statusMessage.isEmpty {
                 Text(vm.statusMessage)
