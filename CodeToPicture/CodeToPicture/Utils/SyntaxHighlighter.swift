@@ -18,6 +18,10 @@ final class SyntaxHighlighter {
 
     // MARK: - Public
 
+    func highlightedHTML(code: String, language: String) -> String {
+        runHighlightJS(code: code, language: language)
+    }
+
     func highlight(
         code: String,
         language: String,

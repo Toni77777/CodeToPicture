@@ -78,6 +78,7 @@ final class ExportViewModel {
 
     func exportSVGFile(
         code: String,
+        language: String,
         theme: Theme,
         settings: AppSettings,
         isPro: Bool
@@ -90,8 +91,10 @@ final class ExportViewModel {
         isExporting = true
         defer { isExporting = false }
 
+        let highlightedHTML = SyntaxHighlighter.shared.highlightedHTML(code: code, language: language)
+
         let svg = await manager.exportSVG(
-            code: code,
+            highlightedHTML: highlightedHTML,
             themeHighlightJSName: theme.highlightJSName,
             backgroundColorHex: settings.backgroundColorHex,
             fontSize: settings.fontSize,

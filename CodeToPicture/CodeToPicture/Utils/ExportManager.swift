@@ -71,7 +71,7 @@ actor ExportManager {
     // MARK: - SVG
 
     func exportSVG(
-        code: String,
+        highlightedHTML: String,
         themeHighlightJSName: String,
         backgroundColorHex: String,
         fontSize: Double,
@@ -83,52 +83,128 @@ actor ExportManager {
         let tokenColors = parseThemeColors(hlName: themeHighlightJSName)
         let defaultColor = tokenColors["default"] ?? "#f8f8f2"
 
-        let lines = code.components(separatedBy: "\n")
+        let tokens = parseHTMLTokens(html: highlightedHTML, colors: tokenColors, defaultColor: defaultColor)
+
+        // Split tokens into lines, preserving empty lines
+        var lines: [[(text: String, color: String)]] = [[]]
+        for token in tokens {
+            let parts = token.text.components(separatedBy: "\n")
+            for (i, part) in parts.enumerated() {
+                if i > 0 { lines.append([]) }
+                if !part.isEmpty {
+                    lines[lines.count - 1].append((text: part, color: token.color))
+                }
+            }
+        }
+
         let lineCount = max(lines.count, 1)
         let lineHeight = fontSize * 1.6
-
-        let maxLineLength = lines.map(\.count).max() ?? 1
         let charWidth = fontSize * 0.6
+        let maxLineLength = lines.map { $0.reduce(0) { $0 + $1.text.count } }.max() ?? 1
         let estimatedWidth = Double(maxLineLength) * charWidth
 
         let frameOffset: Double = showWindowFrame ? 40 : 0
         let w = padding * 2 + max(estimatedWidth, 200)
         let h = padding * 2 + Double(lineCount) * lineHeight + frameOffset
 
-        var svg = """
-        <svg xmlns="http://www.w3.org/2000/svg" width="\(Int(w))" height="\(Int(h))">
-        <rect width="100%" height="100%" fill="\(backgroundColorHex)" rx="\(Int(cornerRadius))"/>
-        """
+        var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(Int(w))\" height=\"\(Int(h))\" xml:space=\"preserve\">\n"
+        svg += "<rect width=\"100%\" height=\"100%\" fill=\"\(backgroundColorHex)\" rx=\"\(Int(cornerRadius))\"/>\n"
 
         if showWindowFrame {
-            svg += """
-
-            <circle cx="\(Int(padding + 8))" cy="22" r="6" fill="#FF5F57"/>
-            <circle cx="\(Int(padding + 28))" cy="22" r="6" fill="#FEBC2E"/>
-            <circle cx="\(Int(padding + 48))" cy="22" r="6" fill="#28C840"/>
-            """
+            svg += "<circle cx=\"\(Int(padding + 8))\" cy=\"22\" r=\"6\" fill=\"#FF5F57\"/>\n"
+            svg += "<circle cx=\"\(Int(padding + 28))\" cy=\"22\" r=\"6\" fill=\"#FEBC2E\"/>\n"
+            svg += "<circle cx=\"\(Int(padding + 48))\" cy=\"22\" r=\"6\" fill=\"#28C840\"/>\n"
         }
 
         let textX = padding
         let textStartY = padding + frameOffset + fontSize
 
-        for (index, line) in lines.enumerated() {
+        for (index, lineTokens) in lines.enumerated() {
             let y = textStartY + Double(index) * lineHeight
-            let escapedLine = escapeXML(line)
-            svg += """
-
-            <text x="\(Int(textX))" y="\(Int(y))" \
-            font-family="\(fontFamily), monospace" \
-            font-size="\(Int(fontSize))" \
-            fill="\(defaultColor)">\(escapedLine)</text>
-            """
+            svg += "<text x=\"\(Int(textX))\" y=\"\(Int(y))\" font-family=\"\(fontFamily), monospace\" font-size=\"\(Int(fontSize))\">"
+            if lineTokens.isEmpty {
+                svg += " "
+            } else {
+                for token in lineTokens {
+                    svg += "<tspan fill=\"\(token.color)\">\(escapeXML(token.text))</tspan>"
+                }
+            }
+            svg += "</text>\n"
         }
 
-        svg += "\n</svg>"
+        svg += "</svg>"
         return svg
     }
 
     // MARK: - SVG Helpers
+
+    private struct SVGToken {
+        let text: String
+        let color: String
+    }
+
+    private func parseHTMLTokens(html: String, colors: [String: String], defaultColor: String) -> [SVGToken] {
+        var tokens: [SVGToken] = []
+        var colorStack = [defaultColor]
+        var i = html.startIndex
+
+        while i < html.endIndex {
+            if html[i] == "<" {
+                guard let tagEnd = html[i...].firstIndex(of: ">") else { break }
+                let tag = String(html[i...tagEnd])
+
+                if tag.hasPrefix("<span") {
+                    if let classRange = tag.range(of: "class=\""),
+                       let closeQuote = tag[classRange.upperBound...].firstIndex(of: "\"") {
+                        let className = String(tag[classRange.upperBound..<closeQuote])
+                        let color = resolveTokenColor(className: className, colors: colors, fallback: colorStack.last ?? defaultColor)
+                        colorStack.append(color)
+                    } else {
+                        colorStack.append(colorStack.last ?? defaultColor)
+                    }
+                } else if tag.hasPrefix("</span") {
+                    if colorStack.count > 1 { colorStack.removeLast() }
+                }
+
+                i = html.index(after: tagEnd)
+                continue
+            }
+
+            var runEnd = html.index(after: i)
+            while runEnd < html.endIndex && html[runEnd] != "<" {
+                runEnd = html.index(after: runEnd)
+            }
+
+            let rawText = String(html[i..<runEnd])
+            let decoded = decodeHTMLEntities(rawText)
+            if !decoded.isEmpty {
+                tokens.append(SVGToken(text: decoded, color: colorStack.last ?? defaultColor))
+            }
+            i = runEnd
+        }
+
+        return tokens
+    }
+
+    private func resolveTokenColor(className: String, colors: [String: String], fallback: String) -> String {
+        let parts = className.split(separator: " ")
+        for part in parts {
+            let key = part.hasPrefix("hljs-") ? String(part.dropFirst(5)) : String(part)
+            if let color = colors[key] { return color }
+        }
+        return fallback
+    }
+
+    private func decodeHTMLEntities(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&lt;", with: "<")
+            .replacingOccurrences(of: "&gt;", with: ">")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#x27;", with: "'")
+            .replacingOccurrences(of: "&#39;", with: "'")
+            .replacingOccurrences(of: "&apos;", with: "'")
+    }
 
     private func parseThemeColors(hlName: String) -> [String: String] {
         var colors: [String: String] = [:]

@@ -159,6 +159,7 @@ struct PreviewView: View {
                 Task {
                     await exportVM.exportSVGFile(
                         code: editorVM.code,
+                        language: editorVM.language,
                         theme: themeManager.selectedTheme,
                         settings: settings,
                         isPro: purchaseManager.isPro
