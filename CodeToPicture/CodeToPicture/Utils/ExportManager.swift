@@ -73,12 +73,18 @@ actor ExportManager {
     func exportSVG(
         highlightedHTML: String,
         themeHighlightJSName: String,
-        backgroundColorHex: String,
+        cardBackgroundHex: String,
+        canvasBackground: CanvasBackground,
+        cardWidth: Double,
+        cardHeight: Double,
+        canvasPadding: Double,
+        canvasCornerRadius: Double,
         fontSize: Double,
         fontFamily: String,
         padding: Double,
         cornerRadius: Double,
-        showWindowFrame: Bool
+        showWindowFrame: Bool,
+        windowFrameStyle: String
     ) -> String {
         let tokenColors = parseThemeColors(hlName: themeHighlightJSName)
         let defaultColor = tokenColors["default"] ?? "#f8f8f2"
@@ -97,31 +103,43 @@ actor ExportManager {
             }
         }
 
-        let lineCount = max(lines.count, 1)
+        let totalWidth = cardWidth + canvasPadding * 2
+        let totalHeight = cardHeight + canvasPadding * 2
+        let cardX = canvasPadding
+        let cardY = canvasPadding
+
         let lineHeight = fontSize * 1.6
-        let charWidth = fontSize * 0.6
-        let maxLineLength = lines.map { $0.reduce(0) { $0 + $1.text.count } }.max() ?? 1
-        let estimatedWidth = Double(maxLineLength) * charWidth
+        let frameHeight: Double = showWindowFrame ? 24 : 0
 
-        let frameOffset: Double = showWindowFrame ? 40 : 0
-        let w = padding * 2 + max(estimatedWidth, 200)
-        let h = padding * 2 + Double(lineCount) * lineHeight + frameOffset
+        var defs = ""
+        let canvasFill = svgFill(for: canvasBackground, defsOut: &defs, gradientID: "canvasBg")
 
-        var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(Int(w))\" height=\"\(Int(h))\" xml:space=\"preserve\">\n"
-        svg += "<rect width=\"100%\" height=\"100%\" fill=\"\(backgroundColorHex)\" rx=\"\(Int(cornerRadius))\"/>\n"
+        var svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"\(Int(totalWidth))\" height=\"\(Int(totalHeight))\" xml:space=\"preserve\">\n"
 
-        if showWindowFrame {
-            svg += "<circle cx=\"\(Int(padding + 8))\" cy=\"22\" r=\"6\" fill=\"#FF5F57\"/>\n"
-            svg += "<circle cx=\"\(Int(padding + 28))\" cy=\"22\" r=\"6\" fill=\"#FEBC2E\"/>\n"
-            svg += "<circle cx=\"\(Int(padding + 48))\" cy=\"22\" r=\"6\" fill=\"#28C840\"/>\n"
+        if !defs.isEmpty {
+            svg += "<defs>\(defs)</defs>\n"
         }
 
-        let textX = padding
-        let textStartY = padding + frameOffset + fontSize
+        // Canvas background
+        if canvasFill != "none" {
+            svg += "<rect width=\"\(Int(totalWidth))\" height=\"\(Int(totalHeight))\" fill=\"\(canvasFill)\" rx=\"\(Int(canvasCornerRadius))\"/>\n"
+        }
+
+        // Card background
+        svg += "<rect x=\"\(formatCoord(cardX))\" y=\"\(formatCoord(cardY))\" width=\"\(formatCoord(cardWidth))\" height=\"\(formatCoord(cardHeight))\" fill=\"\(cardBackgroundHex)\" rx=\"\(Int(cornerRadius))\"/>\n"
+
+        // Window frame (relative to card)
+        if showWindowFrame {
+            svg += windowFrameSVG(style: windowFrameStyle, cardOriginX: cardX, cardOriginY: cardY)
+        }
+
+        // Code text
+        let textX = cardX + padding
+        let textStartY = cardY + frameHeight + padding + fontSize
 
         for (index, lineTokens) in lines.enumerated() {
             let y = textStartY + Double(index) * lineHeight
-            svg += "<text x=\"\(Int(textX))\" y=\"\(Int(y))\" font-family=\"\(fontFamily), monospace\" font-size=\"\(Int(fontSize))\">"
+            svg += "<text x=\"\(formatCoord(textX))\" y=\"\(formatCoord(y))\" font-family=\"\(escapeXML(fontFamily)), monospace\" font-size=\"\(Int(fontSize))\">"
             if lineTokens.isEmpty {
                 svg += " "
             } else {
@@ -133,6 +151,80 @@ actor ExportManager {
         }
 
         svg += "</svg>"
+        return svg
+    }
+
+    // MARK: - SVG Canvas Background
+
+    private func svgFill(for background: CanvasBackground, defsOut: inout String, gradientID: String) -> String {
+        switch background {
+        case .none:
+            return "none"
+
+        case .solid(let hex):
+            return hex
+
+        case .linearGradient(let stops, let angle):
+            let radians = angle * .pi / 180
+            let startX = 0.5 + 0.5 * cos(radians)
+            let startY = 0.5 + 0.5 * sin(radians)
+            let endX = 0.5 - 0.5 * cos(radians)
+            let endY = 0.5 - 0.5 * sin(radians)
+
+            var def = "<linearGradient id=\"\(gradientID)\" x1=\"\(formatPercent(startX))\" y1=\"\(formatPercent(startY))\" x2=\"\(formatPercent(endX))\" y2=\"\(formatPercent(endY))\">"
+            for stop in stops {
+                def += "<stop offset=\"\(formatPercent(stop.position))\" stop-color=\"\(stop.colorHex)\"/>"
+            }
+            def += "</linearGradient>"
+            defsOut += def
+            return "url(#\(gradientID))"
+
+        case .radialGradient(let stops, let centerX, let centerY):
+            var def = "<radialGradient id=\"\(gradientID)\" cx=\"\(formatPercent(centerX))\" cy=\"\(formatPercent(centerY))\" r=\"70%\">"
+            for stop in stops {
+                def += "<stop offset=\"\(formatPercent(stop.position))\" stop-color=\"\(stop.colorHex)\"/>"
+            }
+            def += "</radialGradient>"
+            defsOut += def
+            return "url(#\(gradientID))"
+
+        case .meshGradient(let colors, _):
+            // SVG has no native mesh; approximate with a diagonal linear gradient through all colors
+            guard !colors.isEmpty else { return "none" }
+            if colors.count == 1 { return colors[0] }
+
+            var def = "<linearGradient id=\"\(gradientID)\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">"
+            for (i, color) in colors.enumerated() {
+                let pos = Double(i) / Double(colors.count - 1)
+                def += "<stop offset=\"\(formatPercent(pos))\" stop-color=\"\(color)\"/>"
+            }
+            def += "</linearGradient>"
+            defsOut += def
+            return "url(#\(gradientID))"
+        }
+    }
+
+    // MARK: - SVG Window Frame
+
+    private func windowFrameSVG(style: String, cardOriginX: Double, cardOriginY: Double) -> String {
+        if style == "none" { return "" }
+
+        let centerY = cardOriginY + 18
+        let firstCX = cardOriginX + 18
+
+        let colors: [String]
+        switch style {
+        case "chrome", "arc":
+            colors = ["#ffffff40", "#ffffff40", "#ffffff40"]
+        default:
+            colors = ["#FF5F57", "#FEBC2E", "#28C840"]
+        }
+
+        var svg = ""
+        for (i, color) in colors.enumerated() {
+            let cx = firstCX + Double(i) * 20
+            svg += "<circle cx=\"\(formatCoord(cx))\" cy=\"\(formatCoord(centerY))\" r=\"6\" fill=\"\(color)\"/>\n"
+        }
         return svg
     }
 
@@ -209,26 +301,50 @@ actor ExportManager {
     private func parseThemeColors(hlName: String) -> [String: String] {
         var colors: [String: String] = [:]
 
-        let url = Bundle.main.url(forResource: hlName, withExtension: "css")
+        let url = Bundle.main.url(forResource: hlName, withExtension: "min.css")
             ?? Bundle.main.url(forResource: hlName + ".min", withExtension: "css")
+            ?? Bundle.main.url(forResource: hlName, withExtension: "css")
 
         guard let url, let css = try? String(contentsOf: url, encoding: .utf8) else {
             return colors
         }
 
-        // Extract default text color from .hljs{...color:#xxx...}
-        let defaultPattern = /\.hljs\s*\{[^}]*color:\s*(#[0-9a-fA-F]{3,8})/
+        // Default text color: .hljs { ... color: #xxx ... }
+        let defaultPattern = /\.hljs\s*\{[^}]*?color:\s*(#[0-9a-fA-F]{3,8})/
         if let match = css.firstMatch(of: defaultPattern) {
             colors["default"] = String(match.1)
         }
 
-        // Extract token colors: .hljs-keyword{color:#ff79c6}
-        let tokenPattern = /\.hljs-([\w-]+)\s*[\{,][^}]*?color:\s*(#[0-9a-fA-F]{3,8})/
-        for match in css.matches(of: tokenPattern) {
-            colors[String(match.1)] = String(match.2)
+        // Walk every CSS block and assign the block's color to each comma-separated .hljs-* selector
+        let blockPattern = /([^{}]+)\{([^}]*)\}/
+        for block in css.matches(of: blockPattern) {
+            let selectors = String(block.1)
+            let body = String(block.2)
+
+            guard let colorMatch = body.firstMatch(of: /color:\s*(#[0-9a-fA-F]{3,8})/) else { continue }
+            let color = String(colorMatch.1)
+
+            for selector in selectors.split(separator: ",") {
+                let sel = selector.trimmingCharacters(in: .whitespaces)
+                let namePattern = /\.hljs-([\w-]+)/
+                for nameMatch in sel.matches(of: namePattern) {
+                    let key = String(nameMatch.1)
+                    if colors[key] == nil {
+                        colors[key] = color
+                    }
+                }
+            }
         }
 
         return colors
+    }
+
+    private func formatCoord(_ value: Double) -> String {
+        String(format: "%.2f", value)
+    }
+
+    private func formatPercent(_ fraction: Double) -> String {
+        String(format: "%.2f%%", fraction * 100)
     }
 
     private func escapeXML(_ string: String) -> String {

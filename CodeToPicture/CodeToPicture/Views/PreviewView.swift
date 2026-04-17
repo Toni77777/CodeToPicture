@@ -162,6 +162,8 @@ struct PreviewView: View {
                         language: editorVM.language,
                         theme: themeManager.selectedTheme,
                         settings: settings,
+                        cardWidth: max(vm.displayWidth, 300),
+                        cardHeight: max(vm.displayHeight, 200),
                         isPro: purchaseManager.isPro
                     )
                 }

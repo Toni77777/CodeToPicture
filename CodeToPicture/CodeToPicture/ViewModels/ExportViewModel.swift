@@ -81,6 +81,8 @@ final class ExportViewModel {
         language: String,
         theme: Theme,
         settings: AppSettings,
+        cardWidth: Double,
+        cardHeight: Double,
         isPro: Bool
     ) async {
         guard isPro else {
@@ -96,12 +98,18 @@ final class ExportViewModel {
         let svg = await manager.exportSVG(
             highlightedHTML: highlightedHTML,
             themeHighlightJSName: theme.highlightJSName,
-            backgroundColorHex: settings.backgroundColorHex,
+            cardBackgroundHex: theme.backgroundColorHex,
+            canvasBackground: settings.canvasBackground,
+            cardWidth: cardWidth,
+            cardHeight: cardHeight,
+            canvasPadding: settings.canvasPadding,
+            canvasCornerRadius: settings.canvasCornerRadius,
             fontSize: settings.fontSize,
             fontFamily: settings.fontFamily,
             padding: settings.padding,
             cornerRadius: settings.cornerRadius,
-            showWindowFrame: settings.showWindowFrame
+            showWindowFrame: settings.showWindowFrame,
+            windowFrameStyle: settings.windowFrameStyle
         )
 
         let panel = NSSavePanel()
